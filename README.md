@@ -58,3 +58,7 @@ Ask the agent things like:
 
 Tools execute real offensive-security workflows. Runs are gated by OMP's normal tool
 approval; only authorize against in-scope targets.
+
+## License
+
+Source Available — same terms as [OFX](https://github.com/anhhung04/ofx/blob/master/LICENSE): no commercial use; modifications must be distributed via public fork. See [LICENSE](LICENSE).

@@ -2,8 +2,7 @@
   "name": "@anhhung04/omp-ofx",
   "version": "0.2.0",
   "description": "OMP plugin: OFX red-team workflow engine integration — run/list/validate workflows, manage detached sessions and fleets, cloud profiles/instances, config, module scaffolding",
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "omp": {
     "tools": [
