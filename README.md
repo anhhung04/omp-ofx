@@ -61,4 +61,4 @@ approval; only authorize against in-scope targets.
 
 ## License
 
-Source Available — same terms as [OFX](https://github.com/anhhung04/ofx/blob/master/LICENSE): no commercial use; modifications must be distributed via public fork. See [LICENSE](LICENSE).
+[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) — free for noncommercial use (personal, educational, research); commercial use requires a separate license. See [LICENSE](LICENSE).
