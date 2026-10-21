@@ -1,6 +1,6 @@
 ---
 name: ofx
-description: Use when running red-team recon, scanning, or exploitation workflows, or when authoring OFX YAML workflows. Teaches ofx flow run/list/validate/search, module syntax, templating, detached sessions, and builtin workflow catalog.
+description: Use when running red-team recon, scanning, or exploitation workflows, authoring OFX YAML workflows or modules, managing OFX config, or provisioning cloud instances/fleets/static VPS. Covers ofx flow run/list/validate, config edit, cloud profiles, fleets, sessions.
 ---
 
 # OFX — Offensive Flow Executor
@@ -18,6 +18,10 @@ parallel with dependency chains, Jinja2 templating, and per-engagement output di
 | Check required inputs before running | `ofx_flow_info` |
 | Author/edit a workflow | write YAML (syntax below), then `ofx_flow_validate` |
 | Find modules for a custom workflow | `ofx_modules` |
+| Build a custom UDF module | `ofx_module_init` scaffold → verify |
+| Change OFX settings | `ofx_config` |
+| Add static VPS / cloud profile, test SSH | `ofx_cloud` |
+| Distributed scan across instances | `ofx_fleet` |
 
 Always run `ofx_flow_info <name>` before `ofx_flow_run` — it shows required inputs.
 
@@ -105,7 +109,54 @@ Validate after every edit: `ofx_flow_validate workflow="<path>"`.
 `c2.bash_reverse_shell`, `recon.targets.split_targets`), `remote` (GitHub-cached).
 `ofx_modules action="info" module="c2.bash_reverse_shell"` shows required args.
 
+## Config
+
+`ofx_config` edits `~/.ofx/config.yml` directly (no ofx config CLI exists).
+Secrets (token/key/password fields) are redacted in tool output — never print
+them yourself; use `ofx_config action=set` to write without echoing.
+
+```
+ofx_config action="list"                              # whole config, redacted
+ofx_config action="set" key="ai.model" value="gpt-4o"
+ofx_config action="set" key="max_parallel_jobs" value="16"
+```
+
+## Cloud: profiles, instances, static VPS
+
+`ofx_cloud` wraps `ofx cloud`. **A static VPS is a profile** — add one with:
+
+```
+ofx_cloud action="profile_add" name="my-vps" provider="static" region="203.0.113.10" sshUser="root" sshKey="~/.ssh/id_ed25519"
+ofx_cloud action="test" host="203.0.113.10" port=22    # verify SSH first
+ofx_cloud action="profile_default" name="my-vps"
+```
+
+Workflows then run on it via `ofx_flow_run ... mode=submit` with a cloud profile,
+or fleet runs. `instance_create`/`instance_destroy` provision real cloud infra —
+always confirm with the user before provisioning or destroying.
+
+## Fleet (distributed scans)
+
+```
+ofx_fleet action="create" count=5 profile="do-small"
+ofx_fleet action="run" workflow="scan/port-scan" targets="10.10.10.0/24" distribution="subnet"
+ofx_fleet action="status" fleetGroup="<id>" refresh=true
+ofx_fleet action="results" fleetGroup="<id>"
+ofx_fleet action="destroy" fleetGroup="<id>"
+```
+
+## Building custom modules
+
+```
+ofx_module_init action="scaffold" path="my_module.py" description="C2 stager"
+ofx_module_init action="verify" path="my_module.py"   # smoke-runs it via a throwaway workflow
+```
+
+Reference: `module: my_module.py::run`. The UDF gets `ctx.inputs` (the `with:` args),
+`ctx.add_outputs(**kw)`, `ctx.log(msg)`; return a dict or None, raise to fail.
+
 ## Safety
 
 Only run workflows against targets the user has explicitly authorized for testing.
 Prefer `dryRun=true` to preview execution plans before firing active scans.
+Fleet/instance creation and destruction cost real money — confirm before running.

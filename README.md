@@ -16,10 +16,14 @@ engine into the OMP agent.
 | `ofx_flow_validate` | Validate workflow YAML after authoring |
 | `ofx_session` | Poll/control detached sessions (list/status/logs/fetch/cancel) |
 | `ofx_modules` | Browse step-module catalog (builtins, tools, library, remotes) |
+| `ofx_config` | Read/modify `~/.ofx/config.yml` (secrets redacted in output) |
+| `ofx_cloud` | Profiles (incl. static VPS), instances, providers, SSH connectivity test |
+| `ofx_fleet` | Multi-instance fleets: create, distributed run, status, results, cancel, destroy |
+| `ofx_module_init` | Scaffold + smoke-verify user-defined Python modules (UDFs) |
 
-**Skill** `ofx` — workflow syntax, tool-selection heuristics, catalog overview, and the
-templating pitfalls that actually break runs (hyphenated step names, `tojson` parsing,
-`call:` contracts for sub-workflows).
+**Skill** `ofx` — workflow syntax, tool-selection heuristics, catalog overview, cloud/fleet
+flows, and the templating pitfalls that actually break runs (hyphenated step names,
+`tojson` parsing, `call:` contracts for sub-workflows).
 
 ## Install
 

@@ -82,3 +82,88 @@ export async function runOfx(
 export function text(s: string) {
   return [{ type: "text" as const, text: s }];
 }
+
+declare const Bun: { YAML: { parse(s: string): unknown; stringify(v: unknown): string } };
+
+/** ~/.ofx data dir; override with OFX_HOME. */
+export function ofxHome(): string {
+  return process.env.OFX_HOME?.trim() || `${process.env.HOME}/.ofx`;
+}
+
+export async function readYamlConfig(
+  file: string,
+): Promise<Record<string, unknown>> {
+  const f = Bun.file(file);
+  if (!(await f.exists())) return {};
+  const raw = await f.text();
+  if (!raw.trim()) return {};
+  const parsed = Bun.YAML.parse(raw);
+  return typeof parsed === "object" && parsed !== null
+    ? (parsed as Record<string, unknown>)
+    : {};
+}
+
+export async function writeYamlConfig(
+  file: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  await Bun.write(file, Bun.YAML.stringify(data) + "\n");
+}
+
+/** Dotted-path get/set/delete on plain objects ("ai.model"). */
+export function getPath(obj: Record<string, unknown>, path: string): unknown {
+  let cur: unknown = obj;
+  for (const part of path.split(".")) {
+    if (typeof cur !== "object" || cur === null) return undefined;
+    cur = (cur as Record<string, unknown>)[part];
+  }
+  return cur;
+}
+
+export function setPath(
+  obj: Record<string, unknown>,
+  path: string,
+  value: unknown,
+): void {
+  const parts = path.split(".");
+  let cur = obj;
+  for (const part of parts.slice(0, -1)) {
+    const next = cur[part];
+    if (typeof next !== "object" || next === null || Array.isArray(next)) {
+      cur[part] = {};
+    }
+    cur = cur[part] as Record<string, unknown>;
+  }
+  cur[parts[parts.length - 1]] = value;
+}
+
+export function deletePath(obj: Record<string, unknown>, path: string): boolean {
+  const parts = path.split(".");
+  let cur: unknown = obj;
+  for (const part of parts.slice(0, -1)) {
+    if (typeof cur !== "object" || cur === null) return false;
+    cur = (cur as Record<string, unknown>)[part];
+  }
+  if (typeof cur !== "object" || cur === null) return false;
+  return delete (cur as Record<string, unknown>)[parts[parts.length - 1]];
+}
+
+/** Redact values under sensitive keys before showing config to the model. */
+const SECRET_KEY = /token|key|secret|password|passphrase/i;
+
+export function redactSecrets(value: unknown, keyHint = ""): unknown {
+  if (Array.isArray(value)) return value.map((v) => redactSecrets(v));
+  if (typeof value === "object" && value !== null) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = redactSecrets(v, k);
+    return out;
+  }
+  if (
+    SECRET_KEY.test(keyHint) &&
+    typeof value === "string" &&
+    value.length > 0
+  ) {
+    return "***";
+  }
+  return value;
+}
