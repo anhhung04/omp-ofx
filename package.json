@@ -1,0 +1,19 @@
+{
+  "name": "@anhhung04/omp-ofx",
+  "version": "0.1.0",
+  "description": "OMP plugin: OFX red-team workflow engine integration — run/list/validate workflows, manage detached sessions, discover builtin workflows and modules",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "omp": {
+    "tools": [
+      "./tools/ofx_flow_run.ts",
+      "./tools/ofx_flow_list.ts",
+      "./tools/ofx_flow_validate.ts",
+      "./tools/ofx_flow_search.ts",
+      "./tools/ofx_flow_info.ts",
+      "./tools/ofx_session.ts",
+      "./tools/ofx_modules.ts"
+    ]
+  }
+}
